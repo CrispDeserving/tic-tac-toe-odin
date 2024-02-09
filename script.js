@@ -58,14 +58,73 @@ const Game = ((import_state) => {
 		}
 
 		import_state.current_move = new_state;
-		console.table(board);
 	}
 
 	function place_mark(move) {
-		const { x, y } = move;
+		const { current_move } = import_state;
 
-		board[x][y] = import_state.current_move;
-		finish_turn();
+		const { x, y } = move;
+		board[x][y] = current_move;
+		if (!check_for_win(move, current_move)) {
+			finish_turn();
+		}
+
+		console.table(board);
+	}
+
+	function finish_game() {
+		alert(`${import_state.current_move} wins`);
+	}
+
+	function check_for_win(move, current_move) {
+		function nudge_coord(to, [new_x, new_y]) {
+			const result = {...to};
+
+			result.x += new_x;
+			result.y += new_y;
+
+			return result;
+		}
+
+		for (const nudge_check of [
+			{ start_nudge: [0, -2], nudge: [0, +1], end_nudge: [0, +3] }, 
+			{ start_nudge: [-2, 0], nudge: [+1, 0], end_nudge: [+3, 0] }, 
+
+			{ start_nudge: [-2, -2], nudge: [+1, +1], end_nudge: [+3, +3] }, 
+			{ start_nudge: [-2, +2], nudge: [+1, -1], end_nudge: [+3, -3] }, 
+		]) {
+			const { start_nudge, nudge, end_nudge } = nudge_check;
+			const end_coord = nudge_coord(move, end_nudge);
+
+			let count = 0;
+			for (
+				let coord = nudge_coord(move, start_nudge);
+				!Object.entries(coord).every(([_key, value]) => {
+					return value === end_coord[_key];
+				});
+				coord = nudge_coord(coord, nudge)
+			) {
+				if (!board.hasOwnProperty(coord.x)) {
+					continue;
+				}
+
+				const row = board[coord.x];
+				if (!row.hasOwnProperty(coord.y)) {
+					continue;
+				}
+
+				if (row[coord.y] === current_move) {
+					count += 1;
+				}
+			}
+
+			if (count === 3) {
+				finish_game();
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	return {
