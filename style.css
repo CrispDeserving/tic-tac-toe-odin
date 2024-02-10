@@ -28,8 +28,13 @@
 }
 
 .board .cell {
+	display: grid;
+	place-content: center;
+	aspect-ratio: 1;
 	border-radius: 1rem;
-	border: 0.5ch solid darkgray;
+	border: 0.5rem solid darkgray;
+	font-size: 8rem;
+	font-family: monospace;
 }
 
 .cell.pressed {
