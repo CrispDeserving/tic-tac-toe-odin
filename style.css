@@ -3,3 +3,40 @@
 	padding: 0;
 	box-sizing: border-box;
 }
+
+.game-container {
+	display: grid;
+	place-content: center;
+	place-items: center;
+	gap: 3rem;
+	min-height: 100vh;
+	min-width: 100vw;
+}
+
+.game-container .title {
+	font-size: 4rem;
+}
+
+.game-container .board {
+	display: grid;
+	aspect-ratio: 1;
+	width: min(60vh, 60vw);
+	place-content: stretch;
+	grid-template-rows: repeat(3, 1fr);
+	grid-template-columns: repeat(3, 1fr);
+	gap: 1.5ch;
+}
+
+.board .cell {
+	border-radius: 1rem;
+	border: 0.5ch solid darkgray;
+}
+
+.cell.pressed {
+	background-color: transparent !important;
+	border-color: lightgray !important;
+}
+
+.game-container .game-info {
+	font-size: 2rem;
+}
