@@ -4,31 +4,71 @@ const GameState = (() => {
 		x_mark: "x",
 		o_mark: "o",
 	};
-	let move;
+
+	const board_info = {
+		dom_element: false,
+		board: [],
+	};
+	let move_info = {
+		dom_element: false,
+		last_pressed: {},
+		value: CELL_STATES.o_mark,
+	};
+
+	function update_cell(new_pressed, new_value) {
+		move_info.last_pressed = new_pressed;
+		const { x, y } = new_pressed;
+
+		for (const cell of board_info.dom_element) {
+			if (cell.getAttribute("x") === x.toString() && cell.getAttribute("y") === y.toString()) {
+				cell.innerText = new_value;
+				return;
+			}
+		}
+	}
+
+	function bind_move_display(move_display) {
+		move_info.dom_element = move_display;
+	}
 	
+	function bind_board_display(board_display) {
+		board_info.dom_element = board_display;
+	}
+
 	return {
 		CELL_STATES,
-		board: [],
+		board: board_info.board,
 
 		get current_move() {
-			return move;
+			return move_info.value;
 		},
 
 		set current_move(value) {
+			let bad_value = true;
 			for (const valid_state of [CELL_STATES.o_mark, CELL_STATES.x_mark]) {
 				if (valid_state === value) {
-					move = value;
-					return;
+					move_info.value = value;
+					bad_value = false;
+					break;
 				}
 			}
 
-			console.error("(set current_move): Not a valid change.");
+			if (bad_value) {
+				console.error("(set current_move): Not a valid change.");
+				return;
+			}
+
+			move_info.dom_element.innerText = value.toUpperCase();
 		},
+
+		update_cell,
+		bind_move_display,
+		bind_board_display,
 	};
 })();
 
 const Game = ((import_state) => {
-	const { board, CELL_STATES } = import_state;
+	const { board, CELL_STATES, update_cell } = import_state;
 	const { empty_cell, x_mark, o_mark } = CELL_STATES;
 
 	function reset_board() {
@@ -53,8 +93,8 @@ const Game = ((import_state) => {
 		let new_state;
 
 		switch (import_state.current_move) {
-			case x_mark: new_state = o_mark;
-			case o_mark: new_state = x_mark;
+			case x_mark: new_state = o_mark; break;
+			case o_mark: new_state = x_mark; break;
 		}
 
 		import_state.current_move = new_state;
@@ -62,13 +102,19 @@ const Game = ((import_state) => {
 
 	function place_mark(move) {
 		const { current_move } = import_state;
+		let { x, y } = move;
 
-		const { x, y } = move;
+		x = parseInt(x);
+		y = parseInt(y);
 		board[x][y] = current_move;
-		if (!check_for_win(move, current_move)) {
+
+		if (check_for_win({x, y}, current_move)) {
+			finish_game();
+		} else {
 			finish_turn();
 		}
 
+		update_cell(move, current_move);
 		console.table(board);
 	}
 
@@ -100,7 +146,7 @@ const Game = ((import_state) => {
 			for (
 				let coord = nudge_coord(move, start_nudge);
 				!Object.entries(coord).every(([_key, value]) => {
-					return value === end_coord[_key];
+					return value >= end_coord[_key];
 				});
 				coord = nudge_coord(coord, nudge)
 			) {
@@ -119,7 +165,6 @@ const Game = ((import_state) => {
 			}
 
 			if (count === 3) {
-				finish_game();
 				return true;
 			}
 		}
@@ -127,9 +172,27 @@ const Game = ((import_state) => {
 		return false;
 	}
 
+	function bind_game_controllers({ buttons, move_display }) {
+		for (const btn of buttons) {
+			btn.addEventListener("click", (evt) => {
+				const button = evt.target;
+				const x = button.getAttribute("x");
+				const y = button.getAttribute("y");
+
+				button.classList.toggle("pressed");
+
+				place_mark({ x, y });
+			});
+		}
+
+		import_state.bind_move_display(move_display);
+		import_state.bind_board_display(buttons);
+	}
+
 	return {
 		new_game,
 		place_mark,
+		bind_game_controllers,
 	};
 })(GameState);
 
@@ -140,8 +203,13 @@ const Game = ((import_state) => {
 // PlayerDisplay
 
 window.addEventListener("DOMContentLoaded", () => {
+	const game_container = document.querySelector(".game-container");
+
+	const buttons = game_container.querySelectorAll(".board .cell");
+	const move_display = game_container.querySelector(".game-info .current-move");
+
+	Game.bind_game_controllers({ buttons, move_display });
 	Game.new_game();
 
 	console.table(GameState.board);
-	console.log(GameState.current_move);
 });
