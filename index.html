@@ -10,25 +10,52 @@
 </head>
 
 <body>
-	<main class="game-container">
-		<h1 class="title">Tic-Tac-Toe</h1>
+	<main class="container">
+		<div class="game" style="display: none;">
+			<h1 class="title">Tic-Tac-Toe</h1>
 
-		<div class="board">
-			<button class="cell" x="0" y="0"></button>
-			<button class="cell" x="1" y="0"></button>
-			<button class="cell" x="2" y="0"></button>
+			<div class="board">
+				<button class="cell" x="0" y="0"></button>
+				<button class="cell" x="1" y="0"></button>
+				<button class="cell" x="2" y="0"></button>
 
-			<button class="cell" x="0" y="1"></button>
-			<button class="cell" x="1" y="1"></button>
-			<button class="cell" x="2" y="1"></button>
+				<button class="cell" x="0" y="1"></button>
+				<button class="cell" x="1" y="1"></button>
+				<button class="cell" x="2" y="1"></button>
 
-			<button class="cell" x="0" y="2"></button>
-			<button class="cell" x="1" y="2"></button>
-			<button class="cell" x="2" y="2"></button>
+				<button class="cell" x="0" y="2"></button>
+				<button class="cell" x="1" y="2"></button>
+				<button class="cell" x="2" y="2"></button>
+			</div>
+
+			<div class="game-info">
+				Current Player: <span class="current-move"></span>
+			</div>
 		</div>
 
-		<div class="game-info">
-			Current Player: <span class="current-move"></span>
+		<div class="start-wrapper">
+			<form class="start" action="/">
+				<h1 class="title">Tic-Tac-Toe</h1>
+
+				<div class="player-names">
+					<label for="player1" class="player-name">
+						<div class="input-label">
+							<span class="x-mark mark">X</span> Player 1 <span class="x-mark mark">X</span>
+						</div>
+
+						<input type="text" id="player1"></input>
+					</label>
+
+					<label for="player2" class="player-name">
+						<div class="input-label">
+							<span class="o-mark mark">O</span> Player 2 <span class="o-mark mark">O</span>
+						</div>
+						<input type="text" id="player2"></input>
+					</label>
+				</div>
+
+				<button class="start-game">Start Game</button>
+			</form>
 		</div>
 	</main>
 </body>

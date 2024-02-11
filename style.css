@@ -4,7 +4,15 @@
 	box-sizing: border-box;
 }
 
-.game-container {
+.x-mark {
+	color: lightblue;
+}
+
+.o-mark {
+	color: gold;
+}
+
+.container {
 	display: grid;
 	place-content: center;
 	place-items: center;
@@ -13,11 +21,13 @@
 	min-width: 100vw;
 }
 
-.game-container .title {
+.game .title,
+.start .title
+{
 	font-size: 4rem;
 }
 
-.game-container .board {
+.game .board {
 	display: grid;
 	aspect-ratio: 1;
 	width: min(60vh, 60vw);
@@ -42,6 +52,51 @@
 	border-color: lightgray !important;
 }
 
-.game-container .game-info {
+.game .game-info {
 	font-size: 2rem;
+}
+
+.container .start {
+	display: grid;
+	place-items: center;
+	gap: 4rem;
+} 
+
+.start .player-names {
+	display: grid;
+	place-items: center;
+	width: min(60vh, 60vw);
+	aspect-ratio: 3 / 2;
+	gap: 2rem;
+} 
+
+.player-names .player-name {
+	display: grid;
+	place-self: center stretch;
+	gap: 1ch;
+}
+
+.player-name .input-label {
+	justify-self: center;
+	display: flex;
+	gap: 1ch;
+	align-items: center;
+	font-size: 2rem;
+}
+
+.player-name input {
+	font-size: 1.75rem;
+	padding: 0.5ch 1rem;
+}
+
+.player-name .input-label .mark {
+	font-size: 3rem;
+	font-family: monospace;
+}
+
+.start .start-game {
+	font-size: 2rem;
+	padding: 0.5ch 1rem;
+	height: 4rem;
+	aspect-ratio: 5 / 1;
 }
