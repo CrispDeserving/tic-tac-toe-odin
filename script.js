@@ -4,12 +4,18 @@ const GameState = (() => {
 		x_mark: "x",
 		o_mark: "o",
 	};
+	const PLAY_STATES = {
+		playing: "PLAYING",
+		draw: "DRAW",
+		win: "WIN",
+	};
 
+	let play_info = PLAY_STATES.playing;
 	const board_info = {
 		dom_element: false,
 		board: [],
 	};
-	let move_info = {
+	const move_info = {
 		dom_element: false,
 		last_pressed: {},
 		value: CELL_STATES.o_mark,
@@ -37,6 +43,9 @@ const GameState = (() => {
 
 	return {
 		CELL_STATES,
+		PLAY_STATES,
+
+
 		board: board_info.board,
 
 		get current_move() {
@@ -61,6 +70,17 @@ const GameState = (() => {
 			move_info.dom_element.innerText = value.toUpperCase();
 		},
 
+		get play_info() {
+			return play_info;
+		},
+
+		set play_info(new_value) {
+			if (Object.values(PLAY_STATES).some((valid_value) => valid_value === new_value)) {
+				play_info = new_value;
+				return;
+			}
+		},
+
 		update_cell,
 		bind_move_display,
 		bind_board_display,
@@ -68,8 +88,9 @@ const GameState = (() => {
 })();
 
 const Game = ((import_state) => {
-	const { board, CELL_STATES, update_cell } = import_state;
+	const { board, PLAY_STATES, CELL_STATES, update_cell } = import_state;
 	const { empty_cell, x_mark, o_mark } = CELL_STATES;
+	const { playing, win, draw } = PLAY_STATES;
 
 	function reset_board() {
 		board.splice(0, board.length);
@@ -86,6 +107,7 @@ const Game = ((import_state) => {
 
 	function new_game() {
 		import_state.current_move = o_mark;
+		import_state.game_info = playing;
 		reset_board();
 	}
 
@@ -101,21 +123,36 @@ const Game = ((import_state) => {
 	}
 
 	function place_mark(move) {
-		const { current_move } = import_state;
+		const { current_move, play_info } = import_state;
 		let { x, y } = move;
 
 		x = parseInt(x);
 		y = parseInt(y);
-		board[x][y] = current_move;
 
+		if (board[x][y] !== empty_cell) return false;
+		if (play_info === draw || play_info === win) {
+			return false;
+		}
+
+		board[x][y] = current_move;
 		if (check_for_win({x, y}, current_move)) {
+			import_state.play_info = win;
 			finish_game();
+
+		} else if (check_for_draw()) {
+			import_state.play_info = draw;
+			alert("game is a draw");
+
+			// TODO: something on dom
+
 		} else {
 			finish_turn();
 		}
 
 		update_cell(move, current_move);
 		console.table(board);
+		
+		return true;
 	}
 
 	function finish_game() {
@@ -172,6 +209,14 @@ const Game = ((import_state) => {
 		return false;
 	}
 
+	function check_for_draw() {
+		return board.every((row) => {
+			return row.every((cell) => {
+				return cell !== empty_cell;
+			});
+		});
+	}
+
 	function bind_game_controllers({ buttons, move_display }) {
 		for (const btn of buttons) {
 			btn.addEventListener("click", (evt) => {
@@ -179,9 +224,9 @@ const Game = ((import_state) => {
 				const x = button.getAttribute("x");
 				const y = button.getAttribute("y");
 
-				button.classList.toggle("pressed");
-
-				place_mark({ x, y });
+				if (place_mark({ x, y })) {
+					button.classList.toggle("pressed");
+				}
 			});
 		}
 
