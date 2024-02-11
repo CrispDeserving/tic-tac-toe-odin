@@ -48,11 +48,11 @@ const GameState = (() => {
 
 		board: board_info.board,
 
-		get current_move() {
+		get current_player() {
 			return move_info.value;
 		},
 
-		set current_move(value) {
+		set current_player(value) {
 			let bad_value = true;
 			for (const valid_state of [CELL_STATES.o_mark, CELL_STATES.x_mark]) {
 				if (valid_state === value) {
@@ -106,7 +106,7 @@ const Game = ((import_state) => {
 	}
 
 	function new_game() {
-		import_state.current_move = o_mark;
+		import_state.current_player = o_mark;
 		import_state.game_info = playing;
 		reset_board();
 	}
@@ -114,16 +114,16 @@ const Game = ((import_state) => {
 	function finish_turn() {
 		let new_state;
 
-		switch (import_state.current_move) {
+		switch (import_state.current_player) {
 			case x_mark: new_state = o_mark; break;
 			case o_mark: new_state = x_mark; break;
 		}
 
-		import_state.current_move = new_state;
+		import_state.current_player = new_state;
 	}
 
 	function place_mark(move) {
-		const { current_move, play_info } = import_state;
+		const { current_player, play_info } = import_state;
 		let { x, y } = move;
 
 		x = parseInt(x);
@@ -134,8 +134,8 @@ const Game = ((import_state) => {
 			return false;
 		}
 
-		board[x][y] = current_move;
-		if (check_for_win({x, y}, current_move)) {
+		board[x][y] = current_player;
+		if (check_for_win({x, y}, current_player)) {
 			import_state.play_info = win;
 			finish_game();
 
@@ -149,14 +149,14 @@ const Game = ((import_state) => {
 			finish_turn();
 		}
 
-		update_cell(move, current_move);
+		update_cell(move, current_player);
 		console.table(board);
 		
 		return true;
 	}
 
 	function finish_game() {
-		alert(`${import_state.current_move} wins`);
+		alert(`${import_state.current_player} wins`);
 	}
 
 	function check_for_win(move, current_move) {
