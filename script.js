@@ -9,8 +9,23 @@ const GameState = (() => {
 		draw: "DRAW",
 		win: "WIN",
 	};
+	const APP_STATES = {
+		start: "start",
+		game: "game",
+	};
+
+	const view_dom = {
+		start: false,
+		game: false,
+		value: APP_STATES.start,
+	};
+	const player_names = {
+		o_mark: "",
+		x_mark: "",
+	};
 
 	let play_info = PLAY_STATES.playing;
+
 	const board_info = {
 		dom_element: false,
 		board: [],
@@ -42,11 +57,31 @@ const GameState = (() => {
 	}
 
 	return {
+		APP_STATES,
 		CELL_STATES,
 		PLAY_STATES,
 
-
+		view_dom,
 		board: board_info.board,
+		player_names,
+
+		get view_state() {
+			return view_dom.value;
+		},
+
+		set view_state(new_value) {
+			if (!Object.values(APP_STATES).some((valid_value) => valid_value === new_value)) return;
+
+			for (const key in view_dom) {
+				if (key === "value") continue;
+				const dom_object = view_dom[key];
+
+				dom_object.classList.add("hidden");
+			}
+
+			view_dom[new_value.toLowerCase()].classList.remove("hidden");
+			view_dom.value = new_value;
+		},
 
 		get current_player() {
 			return move_info.value;
@@ -87,7 +122,7 @@ const GameState = (() => {
 	};
 })();
 
-const Game = ((import_state) => {
+const GameLogic = ((import_state) => {
 	const { board, PLAY_STATES, CELL_STATES, update_cell } = import_state;
 	const { empty_cell, x_mark, o_mark } = CELL_STATES;
 	const { playing, win, draw } = PLAY_STATES;
@@ -108,7 +143,9 @@ const Game = ((import_state) => {
 	function new_game() {
 		import_state.current_player = o_mark;
 		import_state.game_info = playing;
+
 		reset_board();
+		import_state.view_state = import_state.APP_STATES.game;
 	}
 
 	function finish_turn() {
@@ -217,7 +254,9 @@ const Game = ((import_state) => {
 		});
 	}
 
-	function bind_game_controllers({ buttons, move_display }) {
+	function bind_game_controllers({ game_wrapper, buttons, move_display }) {
+		import_state.view_dom.game = game_wrapper;
+
 		for (const btn of buttons) {
 			btn.addEventListener("click", (evt) => {
 				const button = evt.target;
@@ -241,6 +280,57 @@ const Game = ((import_state) => {
 	};
 })(GameState);
 
+const Start = ((import_state, import_game_logic) => {
+	const { view_dom } = import_state;
+
+	function get_player_names(players) {
+		const { player_names } = import_state;
+
+		for (const player_input of players) {
+			const value = player_input.value;
+			const id = player_input.getAttribute("id");
+
+			switch (id) {
+				case "player-x-mark": player_names.x_mark = value; break;
+				case "player-o-mark": player_names.o_mark = value; break;
+			}
+		}
+
+		return Object.values(player_names).every((val) => val !== null && val.length !== 0);
+	}
+	function bind_start_controllers({ start_wrapper, players, start_game_btn }) {
+		view_dom.start = start_wrapper;
+
+		start_game_btn.addEventListener("click", (evt) => {
+			evt.preventDefault();
+			if (!get_player_names(players)) return;
+
+			import_game_logic.new_game();
+		});
+	}
+
+	return {
+		bind_start_controllers,
+	};
+})(GameState, GameLogic);
+
+const Game = ((import_start, import_game_logic ) => {
+	const { bind_game_controllers, new_game, place_mark } = import_game_logic;
+	const { bind_start_controllers } = import_start;
+
+	function bind_dom_elements(game_dom, start_dom) {
+		bind_game_controllers(game_dom);
+		bind_start_controllers(start_dom);
+	}
+
+	return {
+		new_game,
+		place_mark,
+
+		bind_dom_elements,
+	};
+})(Start, GameLogic);
+
 // Game todo:
 // Board (dictates player state)
 // BoardDisplay
@@ -248,13 +338,19 @@ const Game = ((import_state) => {
 // PlayerDisplay
 
 window.addEventListener("DOMContentLoaded", () => {
-	const game_container = document.querySelector(".game-container");
+	const game_wrapper = document.querySelector(".game");
+	const game_dom = {
+		game_wrapper,
+		buttons: game_wrapper.querySelectorAll(".board .cell"),
+		move_display: game_wrapper.querySelector(".game-info .current-move"), 
+	};
 
-	const buttons = game_container.querySelectorAll(".board .cell");
-	const move_display = game_container.querySelector(".game-info .current-move");
+	const start_wrapper = document.querySelector(".start-wrapper");
+	const start_dom = {
+		start_wrapper,
+		players: start_wrapper.querySelectorAll(`.player-name input[type="text"]`),
+		start_game_btn: start_wrapper.querySelector(".start-game"),
+	};
 
-	Game.bind_game_controllers({ buttons, move_display });
-	Game.new_game();
-
-	console.table(GameState.board);
+	Game.bind_dom_elements(game_dom, start_dom);
 });
