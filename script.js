@@ -16,7 +16,15 @@ const GameState = (() => {
 
 	const view_dom = {
 		start: false,
-		game: false,
+		game: {
+			root: false,
+			playing_wrapper: false,
+			done_wrapper: false,
+			draw: false,
+			win: false,
+			player_name_display: false,
+		},
+
 		value: APP_STATES.start,
 	};
 	const player_names = {
@@ -72,14 +80,12 @@ const GameState = (() => {
 		set view_state(new_value) {
 			if (!Object.values(APP_STATES).some((valid_value) => valid_value === new_value)) return;
 
-			for (const key in view_dom) {
-				if (key === "value") continue;
-				const dom_object = view_dom[key];
-
-				dom_object.classList.add("hidden");
+			const views = { game: view_dom.game.root, start: view_dom.start }; 
+			for (const key in views) {
+				views[key].classList.add("hidden");
 			}
 
-			view_dom[new_value.toLowerCase()].classList.remove("hidden");
+			views[new_value.toLowerCase()].classList.remove("hidden");
 			view_dom.value = new_value;
 		},
 
@@ -112,8 +118,30 @@ const GameState = (() => {
 		set play_info(new_value) {
 			if (Object.values(PLAY_STATES).some((valid_value) => valid_value === new_value)) {
 				play_info = new_value;
+			}
+
+			const game_dom = view_dom.game;
+			if (new_value === PLAY_STATES.playing) {
+				game_dom.playing_wrapper.classList.remove("hidden");
+				game_dom.done_wrapper.classList.add("hidden");
 				return;
 			}
+
+			const { done_wrapper } = game_dom;
+			game_dom.playing_wrapper.classList.add("hidden");
+			done_wrapper.classList.remove("hidden");
+
+			if (new_value === PLAY_STATES.win) {
+				game_dom.player_name_display.innerText = player_names[`${move_info.value}_mark`];
+			}
+
+			for (const done_states of ["win", "draw"]) {
+				game_dom[done_states].classList.add("hidden");
+				done_wrapper.classList.remove(done_states);
+			}
+			game_dom[new_value.toLowerCase()].classList.remove("hidden");
+			done_wrapper.classList.add(new_value.toLowerCase());
+
 		},
 
 		update_cell,
@@ -177,8 +205,6 @@ const GameLogic = ((import_state) => {
 
 		} else if (check_for_draw()) {
 			finish_game(draw);
-
-			// TODO: something on dom
 
 		} else {
 			finish_turn();
@@ -260,8 +286,27 @@ const GameLogic = ((import_state) => {
 		});
 	}
 
-	function bind_game_controllers({ game_wrapper, buttons, move_display }) {
-		import_state.view_dom.game = game_wrapper;
+	function bind_game_controllers({
+		game_wrapper,
+		playing_wrapper,
+
+		buttons,
+		move_display,
+
+		done_wrapper,
+
+		draw_wrapper,
+		win_wrapper,
+		player_name_display,
+	}) {
+		const game_dom = import_state.view_dom.game;
+
+		game_dom.root = game_wrapper;
+		game_dom.playing_wrapper = playing_wrapper;
+		game_dom.done_wrapper = done_wrapper;
+		game_dom.win = win_wrapper;
+		game_dom.player_name_display = player_name_display;
+		game_dom.draw = draw_wrapper;
 
 		for (const btn of buttons) {
 			btn.addEventListener("click", (evt) => {
@@ -304,6 +349,7 @@ const Start = ((import_state, import_game_logic) => {
 
 		return Object.values(player_names).every((val) => val !== null && val.length !== 0);
 	}
+
 	function bind_start_controllers({ start_wrapper, players, start_game_btn }) {
 		view_dom.start = start_wrapper;
 
@@ -345,10 +391,20 @@ const Game = ((import_start, import_game_logic ) => {
 
 window.addEventListener("DOMContentLoaded", () => {
 	const game_wrapper = document.querySelector(".game");
+	const game_info_wrapper = game_wrapper.querySelector(".game-info");
+	const done_wrapper = game_info_wrapper.querySelector(".done");
+
 	const game_dom = {
 		game_wrapper,
 		buttons: game_wrapper.querySelectorAll(".board .cell"),
 		move_display: game_wrapper.querySelector(".game-info .current-move"), 
+
+		playing_wrapper: game_info_wrapper.querySelector(".playing"),
+
+		done_wrapper,
+		win_wrapper: game_info_wrapper.querySelector(".win"),
+		player_name_display: game_info_wrapper.querySelector(".win .winner"),
+		draw_wrapper: game_info_wrapper.querySelector(".draw"),
 	};
 
 	const start_wrapper = document.querySelector(".start-wrapper");
