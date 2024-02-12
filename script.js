@@ -173,12 +173,10 @@ const GameLogic = ((import_state) => {
 
 		board[x][y] = current_player;
 		if (check_for_win({x, y}, current_player)) {
-			import_state.play_info = win;
-			finish_game();
+			finish_game(win);
 
 		} else if (check_for_draw()) {
-			import_state.play_info = draw;
-			alert("game is a draw");
+			finish_game(draw);
 
 			// TODO: something on dom
 
@@ -192,8 +190,16 @@ const GameLogic = ((import_state) => {
 		return true;
 	}
 
-	function finish_game() {
-		alert(`${import_state.current_player} wins`);
+	function finish_game(play_info) {
+		import_state.play_info = play_info;
+
+		if (play_info === win) {
+			const winner = import_state.player_names[`${import_state.current_player}_mark`];
+			alert(`${winner} wins`);
+
+		} else if (play_info === draw) {
+			alert("game is a draw");
+		}
 	}
 
 	function check_for_win(move, current_move) {
