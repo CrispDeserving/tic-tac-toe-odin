@@ -62,9 +62,46 @@
 	border-color: lightgray !important;
 }
 
-.game .game-info {
+.game-info .done {
+	display: grid;
+	place-items: center;
+	gap: 0.5ch;
+	padding: 1rem;
+	border: 0.5ch solid gray;
+	border-radius: 1ch;
+}
+
+.game-info .done.win {
+	background-color: lightgreen;
+}
+
+.game-info .done.draw {
+	background-color: lightblue;
+}
+
+.game-info .playing,
+.game-info .done > *
+{
 	font-size: 2rem;
 }
+
+.game-info .done-options {
+	display: flex;
+	justify-content: center;
+	gap: 2rem;
+}
+
+.game-info .done-options button {
+	border: 0.2ch solid gray;
+	border-radius: 0.5ch;
+	font-size: 2rem;
+	padding: 0.5ch 1rem;
+}
+
+.done-options .to-start {
+	background-color: lightyellow;
+}
+
 
 .container .start {
 	display: grid;

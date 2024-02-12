@@ -29,7 +29,26 @@
 			</div>
 
 			<div class="game-info">
-				Current Player: <span class="current-move"></span>
+				<div class="playing hidden">
+					Current Player: <span class="current-move"></span>
+				</div>
+
+				<div class="done win">
+					<div class="end-messages">
+						<div class="win">
+							<span class="winner">"The winner"</span> Wins!
+						</div>
+
+						<div class="draw hidden">
+							The game is a draw.
+						</div>
+					</div>
+
+					<div class="done-options">
+						<button class="restart-game">Restart Game</button>
+						<button class="to-start">Back to Start</button>
+					</div>
+				</div>
 			</div>
 		</div>
 
