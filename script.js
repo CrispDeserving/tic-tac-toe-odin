@@ -80,7 +80,10 @@ const GameState = (() => {
 		},
 
 		set view_state(new_value) {
-			if (!Object.values(APP_STATES).some((valid_value) => valid_value === new_value)) return;
+			if (!Object.values(APP_STATES).some((valid_value) => valid_value === new_value)) {
+				console.error("(set view_state): Invalid enum assignment.");
+				return;
+			}
 
 			const views = { game: view_dom.game.root, start: view_dom.start }; 
 			for (const key in views) {
@@ -95,22 +98,14 @@ const GameState = (() => {
 			return move_info.value;
 		},
 
-		set current_player(value) {
-			let bad_value = true;
-			for (const valid_state of [CELL_STATES.o_mark, CELL_STATES.x_mark]) {
-				if (valid_state === value) {
-					move_info.value = value;
-					bad_value = false;
-					break;
-				}
-			}
-
-			if (bad_value) {
-				console.error("(set current_move): Not a valid change.");
+		set current_player(new_value) {
+			if (![CELL_STATES.o_mark, CELL_STATES.x_mark].some(valid_value => new_value === valid_value)) {
+				console.error("(set current_player): Invalid enum assignment.");
 				return;
 			}
 
-			move_info.dom_element.innerText = value.toUpperCase();
+			move_info.value = new_value;
+			move_info.dom_element.innerText = new_value.toUpperCase();
 		},
 
 		get play_info() {
@@ -118,9 +113,11 @@ const GameState = (() => {
 		},
 
 		set play_info(new_value) {
-			if (Object.values(PLAY_STATES).some((valid_value) => valid_value === new_value)) {
-				play_info = new_value;
+			if (!Object.values(PLAY_STATES).some((valid_value) => valid_value === new_value)) {
+				console.error("(set play_info): Invalid enum assignment.");
+				return;
 			}
+			play_info = new_value; 
 
 			const game_dom = view_dom.game;
 			if (new_value === PLAY_STATES.playing) {
@@ -153,7 +150,7 @@ const GameState = (() => {
 })();
 
 const GameLogic = ((import_state) => {
-	const { board_info, PLAY_STATES, CELL_STATES, update_cell } = import_state;
+	const { board_info, PLAY_STATES, CELL_STATES, APP_STATES, update_cell } = import_state;
 	const { board } = board_info;
 
 	const { empty_cell, x_mark, o_mark } = CELL_STATES;
@@ -180,9 +177,9 @@ const GameLogic = ((import_state) => {
 	function new_game() {
 		import_state.current_player = o_mark;
 		import_state.play_info = playing;
+		import_state.view_state = APP_STATES.game;
 
 		reset_board();
-		import_state.view_state = import_state.APP_STATES.game;
 	}
 
 	function finish_turn() {
@@ -220,8 +217,6 @@ const GameLogic = ((import_state) => {
 		}
 
 		update_cell(move, current_player);
-		console.table(board);
-		
 		return true;
 	}
 
@@ -375,7 +370,10 @@ const Start = ((import_state, import_game_logic) => {
 
 		start_game_btn.addEventListener("click", (evt) => {
 			evt.preventDefault();
-			if (!get_player_names(players)) return;
+			if (!get_player_names(players)) {
+				console.error("Getting player names failed. Look at the dom bindings.");
+				return;
+			}
 
 			import_game_logic.new_game();
 		});
@@ -402,12 +400,6 @@ const Game = ((import_start, import_game_logic ) => {
 		bind_dom_elements,
 	};
 })(Start, GameLogic);
-
-// Game todo:
-// Board (dictates player state)
-// BoardDisplay
-// Player -> create_move -> update_board -> result (win or continue)
-// PlayerDisplay
 
 window.addEventListener("DOMContentLoaded", () => {
 	const game_wrapper = document.querySelector(".game");
