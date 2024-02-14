@@ -23,6 +23,8 @@ const GameState = (() => {
 			draw: false,
 			win: false,
 			player_name_display: false,
+			restart: false,
+			to_start: false,
 		},
 
 		value: APP_STATES.start,
@@ -70,7 +72,7 @@ const GameState = (() => {
 		PLAY_STATES,
 
 		view_dom,
-		board: board_info.board,
+		board_info,
 		player_names,
 
 		get view_state() {
@@ -151,7 +153,9 @@ const GameState = (() => {
 })();
 
 const GameLogic = ((import_state) => {
-	const { board, PLAY_STATES, CELL_STATES, update_cell } = import_state;
+	const { board_info, PLAY_STATES, CELL_STATES, update_cell } = import_state;
+	const { board } = board_info;
+
 	const { empty_cell, x_mark, o_mark } = CELL_STATES;
 	const { playing, win, draw } = PLAY_STATES;
 
@@ -166,11 +170,16 @@ const GameLogic = ((import_state) => {
 
 			board.push(row);
 		}
+
+		for (const button of import_state.board_info.dom_element) {
+			button.innerText = "";
+			button.classList.remove("pressed");
+		}
 	}
 
 	function new_game() {
 		import_state.current_player = o_mark;
-		import_state.game_info = playing;
+		import_state.play_info = playing;
 
 		reset_board();
 		import_state.view_state = import_state.APP_STATES.game;
@@ -298,6 +307,9 @@ const GameLogic = ((import_state) => {
 		draw_wrapper,
 		win_wrapper,
 		player_name_display,
+
+		restart_button,
+		to_start_button,
 	}) {
 		const game_dom = import_state.view_dom.game;
 
@@ -319,6 +331,14 @@ const GameLogic = ((import_state) => {
 				}
 			});
 		}
+
+		restart_button.addEventListener("click", () => {
+			GameLogic.new_game();
+		});
+
+		to_start_button.addEventListener("click", () => {
+			alert("TODO!");
+		});
 
 		import_state.bind_move_display(move_display);
 		import_state.bind_board_display(buttons);
@@ -405,6 +425,9 @@ window.addEventListener("DOMContentLoaded", () => {
 		win_wrapper: game_info_wrapper.querySelector(".win"),
 		player_name_display: game_info_wrapper.querySelector(".win .winner"),
 		draw_wrapper: game_info_wrapper.querySelector(".draw"),
+
+		restart_button: done_wrapper.querySelector(".restart-game"),
+		to_start_button: done_wrapper.querySelector(".to-start"),
 	};
 
 	const start_wrapper = document.querySelector(".start-wrapper");
