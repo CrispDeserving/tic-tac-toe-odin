@@ -10,8 +10,8 @@ const GameState = (() => {
 		win: "WIN",
 	};
 	const APP_STATES = {
-		start: "start",
-		game: "game",
+		start: "START",
+		game: "GAME",
 	};
 
 	const view_dom = {
@@ -337,7 +337,7 @@ const GameLogic = ((import_state) => {
 		});
 
 		to_start_button.addEventListener("click", () => {
-			alert("TODO!");
+			import_state.view_state = import_state.APP_STATES.start;
 		});
 
 		import_state.bind_move_display(move_display);
